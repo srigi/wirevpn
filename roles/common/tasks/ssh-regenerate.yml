@@ -1,0 +1,13 @@
+---
+- name: Find SSH host keys
+  find:
+    paths: /etc/ssh
+    patterns: ssh_host_*
+  register: find_results
+
+- name: Regenerate SSH host keys
+  file:
+    path: "{{item.path}}"
+    state: absent
+  with_items: "{{find_results.files}}"
+  notify: reconfigure openssh-server

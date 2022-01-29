@@ -1,0 +1,9 @@
+---
+- name: reconfigure openssh-server
+  become: true
+  command: dpkg-reconfigure --frontend noninteractive openssh-server
+
+- name: restart openssh-server
+  become: true
+  listen: "reconfigure openssh-server"
+  service: name=ssh state=restarted

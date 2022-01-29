@@ -1,0 +1,14 @@
+---
+- name: Disallow password authentication for SSH
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: '#?PasswordAuthentication\s+yes'
+    replace: 'PasswordAuthentication no'
+  notify: restart openssh-server
+
+- name: Disallow root login with password
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: '#?PermitRootLogin\s+(?!without-password).*'
+    replace: 'PermitRootLogin without-password'
+  notify: restart openssh-server

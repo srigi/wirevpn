@@ -1,0 +1,7 @@
+---
+- name: Sync apt repositories and update installed packages
+  apt:
+    cache_valid_time: 172800 # 48h
+    autoclean: yes
+    update_cache: yes
+    upgrade: yes

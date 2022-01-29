@@ -1,0 +1,5 @@
+---
+- name: Common tasks
+  hosts: dev
+  roles:
+    - common

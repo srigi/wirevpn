@@ -1,0 +1,27 @@
+---
+- name: Check existence of the swapfile
+  stat:
+    path: "{{ swapfile_path }}"
+  register: swapfile_exists
+
+- name: Allocate a static file for swap
+  command: fallocate -l {{ swapfile_size }} {{ swapfile_path }} creates={{ swapfile_path }}
+  register: swapfile_written
+  when: swapfile_size and not swapfile_exists.stat.exists
+
+- name: Setup file permissions for a swapfile
+  file: path={{ swapfile_path }} mode=0600
+  when: swapfile_written.changed
+
+- name: Initialize swap inside swapfile (mkswap)
+  command: mkswap {{ swapfile_path }}
+  register: swapfile_initialized
+  when: swapfile_written.changed
+
+- name: Enable swap (swapon)
+  command: swapon {{ swapfile_path }}
+  when: swapfile_initialized.changed
+
+- name: Setup swap in "/etc/fstab"
+  lineinfile: dest=/etc/fstab line="{{swapfile_path}}  none  swap  sw  0  0" state=present
+  when: swapfile_initialized.changed

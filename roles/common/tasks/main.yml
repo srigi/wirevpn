@@ -1,0 +1,16 @@
+---
+- import_tasks: apt-update.yml
+  become: true
+  tags: [postinstall, upkeep]
+
+- import_tasks: ssh.yml
+  become: true
+  tags: [postinstall, ssh]
+
+- import_tasks: ssh-regenerate.yml
+  become: true
+  tags: [ssh:regenerate]
+
+- import_tasks: swapfile.yml
+  become: true
+  tags: [postinstall, swap]
