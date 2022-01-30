@@ -1,9 +1,6 @@
-[my-hosts]
-orion  ansible_host=192.168.0.99   ansible_port=22  ansible_user=root  ansible_python_interpreter=python3
-virgo  ansible_host=192.168.0.200  ansible_port=22  ansible_user=root  ansible_python_interpreter=python3
+[inventory]
+orion  ansible_host=192.168.0.99   ansible_user=root
+virgo  ansible_host=192.168.0.200  ansible_user=root
 
-[dev]
+[dns_servers]
 virgo
-
-[prod]
-orion

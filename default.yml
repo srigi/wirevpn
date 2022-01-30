@@ -1,10 +1,10 @@
 ---
-- name: Common tasks
-  hosts: dev
+- name: Postinstall tasks
+  hosts: all
   roles:
-    - common
+    - postinstall
 
 - name: dnsmasq server
-  hosts: dev
+  hosts: dns_servers
   roles:
     - dnsmasq
