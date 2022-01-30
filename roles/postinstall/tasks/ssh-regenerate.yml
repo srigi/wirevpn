@@ -7,7 +7,7 @@
 
 - name: Regenerate SSH host keys
   file:
-    path: "{{item.path}}"
+    path: "{{ item.path }}"
     state: absent
-  with_items: "{{find_results.files}}"
+  with_items: "{{ find_results.files }}"
   notify: reconfigure openssh-server
