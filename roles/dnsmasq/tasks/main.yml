@@ -8,6 +8,11 @@
     var: ansible_facts.services["systemd-resolved.service"]
   tags: [dns:debug]
 
+- name: "[Debug] print dnsmasq.service"
+  debug:
+    var: ansible_facts.services["dnsmasq.service"]
+  tags: [dns:debug]
+
 - name: Install dnsmasq
   become: true
   apt:
