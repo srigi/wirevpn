@@ -3,3 +3,8 @@
   hosts: dev
   roles:
     - common
+
+- name: dnsmasq server
+  hosts: dev
+  roles:
+    - dnsmasq

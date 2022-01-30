@@ -1,0 +1,4 @@
+---
+interfaces:
+  - lo
+  - enp0s3
