@@ -1,0 +1,5 @@
+---
+- name: Postinstall tasks
+  hosts: all
+  roles:
+    - postinstall

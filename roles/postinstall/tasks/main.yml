@@ -1,16 +1,16 @@
 ---
 - import_tasks: apt-update.yml
   become: true
-  tags: [postinstall, upkeep]
+  tags: [upkeep]
 
 - import_tasks: ssh-hardening.yml
   become: true
-  tags: [postinstall, ssh]
+  tags: [ssh]
 
 - import_tasks: ssh-regenerate.yml
   become: true
-  tags: [ssh:regenerate]
+  tags: [ssh:regenerate, never]
 
 - import_tasks: swapfile.yml
   become: true
-  tags: [postinstall, swap]
+  tags: [swap]

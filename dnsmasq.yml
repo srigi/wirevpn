@@ -1,9 +1,4 @@
 ---
-- name: Postinstall tasks
-  hosts: all
-  roles:
-    - postinstall
-
 - name: dnsmasq server
   hosts: dns_servers
   roles:

@@ -1,24 +1,23 @@
 ---
 - name: "[Debug] Query services"
   service_facts:
-  tags: [dns:debug]
+  tags: [debug, never]
 
 - name: "[Debug] print systemd-resolved.service"
   debug:
     var: ansible_facts.services["systemd-resolved.service"]
-  tags: [dns:debug]
+  tags: [debug, never]
 
 - name: "[Debug] print dnsmasq.service"
   debug:
     var: ansible_facts.services["dnsmasq.service"]
-  tags: [dns:debug]
+  tags: [debug, never]
 
 - name: Install dnsmasq
   become: true
   apt:
     name: dnsmasq
     install_recommends: no
-  tags: [dns]
 
 - name: Disable systemd-resolved.service
   service:
@@ -26,7 +25,6 @@
     enabled: no
     masked: yes
     state: stopped
-  tags: [dns]
 
 - name: Configure dnsmasq
   become: true
@@ -35,4 +33,3 @@
     dest: /etc/dnsmasq.conf
     mode: 0644
   notify: Restart dnsmasq
-  tags: [dns]
