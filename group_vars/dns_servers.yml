@@ -10,3 +10,4 @@ dnsmasq_addresses:
 dnsmasq_interfaces:
   - lo
   - enp0s3
+  - wg0
