@@ -1,8 +1,12 @@
 ---
-domains:
-  - "localdev.io": "192.168.0.101"
-  - "connor.wirevpn": "10.2.0.11"
-
-name_servers:
+dnsmasq_name_servers:
   - 1.1.1.1
   - 8.8.4.4
+
+dnsmasq_addresses:
+  - "lilith.wirevpn": "10.2.0.10"
+  - "connor.wirevpn": "10.2.0.11"
+
+dnsmasq_interfaces:
+  - lo
+  - enp0s3
