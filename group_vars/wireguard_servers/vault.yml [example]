@@ -1,0 +1,4 @@
+---
+vault_preshared_keys:
+  connor: some-secret-value
+  lilith: some-different-secret-value

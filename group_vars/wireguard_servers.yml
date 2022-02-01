@@ -1,7 +1,0 @@
----
-wireguard_address: "10.8.0.1/24"
-
-wireguard_unmanaged_peers:
-  connor:
-    allowed_ips: 10.8.0.10/32
-    public_key: vcS76KL3DTmS2XwAzjDQNnjyqBMaROQQdg10fVSzUQ4=
