@@ -1,8 +1,7 @@
-orion  ansible_host=192.168.0.99   ansible_user=root
-virgo  ansible_host=192.168.0.200  ansible_user=root
+ecs-liva  ansible_host=192.168.0.99   ansible_user=root
 
 [dns_servers]
-virgo
+ecs-liva
 
 [wireguard_servers]
-orion
+ecs-liva
