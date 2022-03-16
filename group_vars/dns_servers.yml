@@ -4,10 +4,11 @@ dnsmasq_name_servers:
   - 8.8.4.4
 
 dnsmasq_addresses:
+  - "ecs-liva.wirevpn": "10.2.0.1"
   - "lilith.wirevpn": "10.2.0.10"
   - "connor.wirevpn": "10.2.0.11"
 
 dnsmasq_interfaces:
   - lo
-  - enp0s3
+  - enp3s0
   - wg0
