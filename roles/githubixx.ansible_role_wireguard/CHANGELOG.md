@@ -1,9 +1,78 @@
 <!--
-Copyright (C) 2018-2021 Robert Wimmer
+Copyright (C) 2018-2023 Robert Wimmer
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
 
 # Changelog
+
+## 14.0.0
+
+- **BREAKING** CentOS7: Introduce `wireguard_centos7_kernel_plus_reboot` and `wireguard_centos7_standard_reboot` variables. Both are set to "true" by default. This will cause the host to be rebooted in case the "wireguard" kernel module was installed the very first time. If `wireguard_centos7_installation_method: "kernel-plus"` is set and the host wasn't booted with a `kernel-plus` kernel already you most probably need to reboot. For the `standard` kernel this might not be needed.
+- CentOS7: Add reboot to the standard mode to make sure the WireGuard kernel module is available (contribution by @mofelee)
+- **BREAKING** Introduce `wireguard_update_cache` variable to control if package manager caches should be updated before the installation (contribution by @sebix). Before this release the package manager cache wasn't updated for AlmaLinux 9, Archlinux, Fedora and openSUSE. With `wireguard_update_cache` set to `true` by default those OSes are now also update the package manager cache. If you don't want that set `wireguard_update_cache` to `false` for the host in question.
+- variable `wireguard_ubuntu_update_cache` is deprecated
+- add support for Oracle Linux 9 (contribution by @cola-zero)
+
+## 13.0.1
+
+- [fix](https://github.com/githubixx/ansible-role-wireguard/pull/182) in README
+
+## 13.0.0
+
+- add IPv6 support (contribution by @DiscowZombie)
+- introduce `wireguard_addresses` variable (contribution by @DiscowZombie)
+
+## 12.0.0
+
+- remove Fedora 35 support (reached EOL)
+- remove openSUSE 15.3 support (reached EOL)
+- remove Debian 10 (Buster) support (reached EOL)
+- fix Molecule prepare for Archlinux
+- fix `ansible-lint` issue in `tasks/setup-debian-raspbian-buster.yml`
+
+## 11.1.0
+
+- add support for elementary OS 6
+- ignore some minor linter warnings
+
+## 11.0.0
+
+- add support for Rocky Linux 9 (original PR from @vincentDcmps: https://github.com/githubixx/ansible-role-wireguard/pull/163)
+- add support for AlmaLinux 9 (original PR from @trunet: https://github.com/githubixx/ansible-role-wireguard/pull/164)
+- add `EL9` to `meta/main.yml`
+- require Ansible >= `2.11` as Rocky Linux is only supported with this version or above
+- `ansible-lint`: use `community.general.pacman` module instead of `ansible.builtin.pacman` for Archlinux setup
+
+## 10.0.0
+
+- remove Fedora 34 + add Fedora 36 to Molecule test
+- remove support for Fedora 35 / add support for Fedora 36
+- add Molecule setup for openSUSE 15.4
+- add Github release action to push new release to Ansible Galaxy
+- add `.yamllint`
+- `tasks/main.yml`: names should start with an uppercase letter
+- `handlers/main.yml`: names should start with an uppercase letter
+- improve the task key order to: name, when, tags, block
+- fix Jinja2 spacing
+
+## 9.3.0
+
+- add support for Ubuntu 22.04 (Jammy Jellyfish)
+
+## 9.2.0
+
+- add `wireguard_interface_restart` variable. This allows the user to decide if the WireGuard interface should be restarted or not in case of changes to the interface. The default is (and was) to use `wg syncconf` which applies the changes to the interface without the need to restart the interface. Restarting the interface was only done if `wg`'s `syncconf` command wasn't available. But that's basically only true for very old (and outdated) WireGuard tools. For more information on this have a look at the README (initial [PR](https://github.com/githubixx/ansible-role-wireguard/pull/152) by @lmm-git)
+- on Debian `lsb-release` is no longer needed (contribution by @blackandred)
+- WireGuard is directly supported by `Raspbian 11` (Bullseye) and higher. So `Raspbian 11` and `Raspbian 10 (Buster)` (and lower) needs to be handled a little bit differently. (contribution by @penguineer)
+- implement a very basic Molecule unit test
+
+## 9.1.0
+
+- For `Rocky Linux 8` only: Added variable `wireguard_rockylinux8_installation_method`. Set `wireguard_rockylinux8_installation_method` to `dkms` to build WireGuard module from source, with wireguard-dkms. This is required if you use a custom kernel and/or your arch is not `x86_64`. The default of `standard` will install the kernel module with kmod-wireguard from ELRepo (contribution by @gitouche-sur-osm)
+
+## 9.0.1
+
+- FIX: The template rendering the WireGuard configuration only checked if `wireguard_save_config` was set and if so sets `SaveConfig = true`. So setting `wireguard_save_config: "false"` had no effect.
 
 ## 9.0.0
 

@@ -2,6 +2,12 @@
 # Copyright (C) 2020 Stefan Haun
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# Note: This setup is called for Raspbian 10 (Buster) and lower.
+#       Since Raspbian 11 (Bullseye) wireguard is supported out
+#       of the box.
+#       Any Raspbian-related changes for Bullseye and above need to
+#       go to a separate playbook.
+
 - name: (Raspbian) Install GPG - required to add WireGuard key
   ansible.builtin.apt:
     name: gnupg
@@ -21,13 +27,13 @@
   ansible.builtin.apt_repository:
     repo: "deb http://deb.debian.org/debian buster-backports main"
     state: present
-    update_cache: true
+    update_cache: "{{ wireguard_update_cache }}"
 
 - name: (Raspbian) Install latest kernel
   ansible.builtin.apt:
     name:
       - "raspberrypi-kernel"
-    state: latest
+    state: latest  # noqa package-latest
   register: wireguard__register_kernel_update
 
 - name: (Raspbian) Reboot after kernel update (Ansible >= 2.8)
@@ -54,6 +60,7 @@
   async: 1
   poll: 0
   ignore_unreachable: true
+  changed_when: false
   when:
     - ansible_version.full is version('2.8.0', '<')
     - wireguard__register_kernel_update is changed
@@ -70,7 +77,7 @@
   ansible.builtin.apt:
     name:
       - "raspberrypi-kernel-headers"
-    state: latest
+    state: latest  # noqa package-latest
 
 - name: (Raspbian) Install WireGuard packages
   ansible.builtin.apt:

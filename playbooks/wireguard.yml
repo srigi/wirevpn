@@ -2,7 +2,7 @@
 - name: Wireguard server
   hosts: wireguard_servers
   roles:
-    - githubixx.ansible_role_wireguard
+    - githubixx.ansible_role_wireguard # https://github.com/githubixx/ansible-role-wireguard
   tasks:
     - name: Setup IPv4 forward
       ansible.posix.sysctl:

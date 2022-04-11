@@ -1,5 +1,5 @@
 ---
-# Copyright (C) 2018-2020 Robert Wimmer
+# Copyright (C) 2018-2022 Robert Wimmer
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Gather instance facts
@@ -12,11 +12,11 @@
       tags:
         - wg-install
   with_first_found:
-    - "setup-{{ ansible_distribution|lower }}-{{ ansible_distribution_major_version }}.yml"
-    - "setup-{{ ansible_distribution|lower }}-{{ ansible_distribution_version }}.yml"
-    - "setup-{{ ansible_distribution|lower }}-{{ ansible_distribution_release }}.yml"
-    - "setup-{{ ansible_distribution|lower }}.yml"
-    - "setup-{{ ansible_os_family|lower }}.yml"
+    - "setup-{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "setup-{{ ansible_distribution | lower }}-{{ ansible_distribution_version }}.yml"
+    - "setup-{{ ansible_distribution | lower }}-{{ ansible_distribution_release }}.yml"
+    - "setup-{{ ansible_distribution | lower }}.yml"
+    - "setup-{{ ansible_os_family | lower }}.yml"
   tags:
     - wg-install
 
@@ -33,14 +33,24 @@
     - wg-install
   when: not ansible_os_family == 'Darwin'
 
-- name: Generate keys | Check wg syncconf subcommand status
-  block:
-    - name: Register if config/private key already exists on target host
-      ansible.builtin.stat:
-        path: "{{ wireguard_remote_directory }}/{{ wireguard_interface }}.conf"
-      register: wireguard__register_config_file
+- name: Set default for WireGuard interface restart behavior
+  ansible.builtin.set_fact:
+    wireguard__restart_interface: >-
+      {%- if wireguard_interface_restart -%}
+      true
+      {%- else -%}
+      false
+      {%- endif %}
+  tags:
+    - skip_ansible_lint
 
-    - name: Get wg subcommands
+- name: Make sure wg syncconf option is available
+  when:
+    - not wireguard_interface_restart
+  tags:
+    - wg-config
+  block:
+    - name: Get available wg subcommands
       ansible.builtin.command: "wg --help"
       register: wireguard__register_subcommands
       changed_when: false
@@ -48,16 +58,41 @@
 
     - name: Check if wg syncconf subcommand is available
       ansible.builtin.set_fact:
-        wg_syncconf: "{{ 'syncconf:' in wireguard__register_subcommands.stdout }}"
+        wireguard__syncconf_avail: "{{ 'syncconf:' in wireguard__register_subcommands.stdout }}"
 
-    - name: Show syncconf subcommand status
+    - name: Wg syncconf subcommand available
       ansible.builtin.debug:
-        var: wg_syncconf
+        var: wireguard__syncconf_avail
+
+    - name: Fall back to interface restart if wg syncconf is not available
+      when:
+        - not wireguard__syncconf_avail
+      ansible.builtin.set_fact:
+        wireguard__restart_interface: true
+
+- name: Final decision on WireGuard interface restart method
+  ansible.builtin.debug:
+    msg: >-
+      {%- if wireguard__restart_interface -%}
+      'restart'
+      {%- else -%}
+      'syncconf'
+      {%- endif %}
+  tags:
+    - skip_ansible_lint
+
+- name: Register if config/private key already exists on target host
+  ansible.builtin.stat:
+    path: "{{ wireguard_remote_directory }}/{{ wireguard_interface }}.conf"
+  register: wireguard__register_config_file
   tags:
     - wg-generate-keys
     - wg-config
 
 - name: WireGuard private key handling for new keys
+  when:
+    - not wireguard__register_config_file.stat.exists
+    - wireguard_private_key is not defined
   block:
     - name: Generate WireGuard private key
       ansible.builtin.command: "wg genkey"
@@ -73,11 +108,11 @@
       no_log: '{{ ansible_verbosity < 3 }}'
       tags:
         - wg-generate-keys
-  when:
-    - not wireguard__register_config_file.stat.exists
-    - wireguard_private_key is not defined
 
 - name: WireGuard private key handling for existing keys
+  when:
+    - wireguard__register_config_file.stat.exists
+    - wireguard_private_key is not defined
   block:
     - name: Read WireGuard config file
       ansible.builtin.slurp:
@@ -93,9 +128,6 @@
       no_log: '{{ ansible_verbosity < 3 }}'
       tags:
         - wg-config
-  when:
-    - wireguard__register_config_file.stat.exists
-    - wireguard_private_key is not defined
 
 - name: Derive WireGuard public key
   ansible.builtin.command: "wg pubkey"

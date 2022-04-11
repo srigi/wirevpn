@@ -5,14 +5,19 @@
 
 - name: Setup for Raspbian
   ansible.builtin.include_tasks:
-    file: "setup-debian-raspbian.yml"
+    file: "setup-debian-raspbian-buster.yml"
     apply:
       tags:
         - wg-install
-  when: ansible_lsb.id is defined and ansible_lsb.id == "Raspbian"
+  when:
+    - ansible_lsb.id is defined
+    - ansible_lsb.id == "Raspbian"
+    - ansible_lsb.major_release is version('11', '<')
   register: wireguard__register_raspbian_setup
 
 - name: Setup for Proxmox VE variants
+  when:
+    - ansible_kernel.find("pve") != -1
   block:
     - name: Setup Proxmox VE host
       ansible.builtin.include_tasks:
@@ -33,8 +38,6 @@
       when:
         - ansible_virtualization_role == "guest"
       register: wireguard__register_pve_guest_variant_setup
-  when:
-    - ansible_kernel.find("pve") != -1
 
 - name: Setup for Debian
   ansible.builtin.include_tasks:
