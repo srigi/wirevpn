@@ -7,7 +7,19 @@ wireguard_unmanaged_peers:
     allowed_ips: 10.2.0.10/32
     public_key: ic3N3ZCZrI26lJD9AyI+/vMHH859lOzh1BN0ogpIzB0=
     preshared_key: "{{ vault_preshared_keys.lilith }}"
-  connor:
+  polaris:
     allowed_ips: 10.2.0.11/32
     public_key: FuzMXMDySj9LlU1arkAGToNaBJHj1gZ9VecYSWo0NEg=
-    preshared_key: "{{ vault_preshared_keys.connor }}"
+    preshared_key: "{{ vault_preshared_keys.polaris }}"
+  narishroom:
+    allowed_ips: 10.2.0.12/32
+    public_key: QIh1Yl6oXXaUwIew0zAUSd0woEbi589g/yeG4zJRIUQ=
+    preshared_key: "{{ vault_preshared_keys.narishroom }}"
+  Iridium:
+    allowed_ips: 10.2.0.21/32
+    public_key: Knd5jtUfxZI6S9pSm2M8eRmkhNcl1pUJkPSNy5qFamg=
+    preshared_key: "{{ vault_preshared_keys.Iridium }}"
+  Rubidium:
+    allowed_ips: 10.2.0.22/32
+    public_key: V5pA03l7+aILJLpTxJpeBiOcn0RGrWXKirdygROWy0E=
+    preshared_key: "{{ vault_preshared_keys.Rubidium }}"
