@@ -1,0 +1,106 @@
+dokku_packages_state:
+  default: present
+  description: State of dokku packages. Accepts 'present' and 'latest'
+  type: string
+
+dokku_version:
+  default: ""
+  description: |
+    The version of dokku to install.
+    Scheduled for deletion after 07/2021. Use `dokku_packages_state` instead.
+  deprecated: true
+  templated: true
+  type: string
+
+dokku_manage_nginx:
+  default: true
+  description: Whether we should manage the 00-default nginx site
+  type: boolean
+
+dokku_daemon_install:
+  default: true
+  description: Whether to install the dokku-daemon
+  type: boolean
+dokku_daemon_version:
+  default: 0.0.2
+  description: The version of dokku-daemon to install
+  type: string
+
+herokuish_version:
+  default: ""
+  description: |
+    The version of herokuish to install.
+    Scheduled for deletion after 07/2021. Use `dokku_packages_state` instead.
+  deprecated: true
+  templated: true
+  type: string
+
+sshcommand_version:
+  default: ""
+  description: |
+    The version of sshcommand to install.
+    Scheduled for deletion after 07/2021. Use `dokku_packages_state` instead.
+  deprecated: true
+  templated: true
+  type: string
+
+plugn_version:
+  default: ""
+  description: |
+    The version of plugn to install.
+    Scheduled for deletion after 07/2021. Use `dokku_packages_state` instead.
+  deprecated: true
+  templated: true
+  type: string
+
+dokku_users:
+  default: null
+  description: |
+    A list of users who should have access to Dokku. This will _not_ grant them generic SSH access, but rather only access as the `dokku` user. Users should be specified in the following format:
+
+    ```yaml
+    - name: Jane Doe
+      username: jane
+      ssh_key: JANES_PUBLIC_SSH_KEY
+    - name: Camilla
+      username: camilla
+      ssh_key: CAMILLAS_PUBLIC_SSH_KEY
+    ```
+  templated: false
+  type: list
+
+# debconf
+dokku_key_file:
+  default: /root/.ssh/id_rsa.pub
+  description: Path on disk to an SSH key to add to the Dokku user (Will be ignored on `dpkg-reconfigure`)
+  type: string
+dokku_skip_key_file:
+  default: 'false'
+  description: Do not check for the existence of the dokku/key_file. Setting this to "true", will require you to manually add an SSH key later on.
+  type: string
+dokku_hostname:
+  default: dokku.me
+  description: Hostname, used as vhost domain and for showing app URL after deploy
+  type: string
+dokku_vhost_enable:
+  default: 'true'
+  description: Use vhost-based deployments (e.g., .dokku.me)
+  type: string
+dokku_web_config:
+  default: 'false'
+  description: Use web-based config for hostname and keyfile
+  type: string
+
+dokku_plugins:
+  default: {}
+  description: |
+    A list of plugins to install. The host _must_ have network access to the install url, and git access if required. Plugins should be specified in the following format:
+
+    ```yaml
+    - name: postgres
+      url: https://github.com/dokku/dokku-postgres.git
+
+    - name: redis
+      url: https://github.com/dokku/dokku-redis.git
+    ```
+  type: list

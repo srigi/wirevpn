@@ -1,0 +1,30 @@
+galaxy_info:
+  author: "Jose Diaz-Gonzalez"
+  description: |
+    This Ansible role helps install Dokku on Debian/Ubuntu variants. Apart
+    from installing Dokku, it also provides various modules that can be
+    used to interface with dokku from your own Ansible playbooks.
+  license: MIT License
+  min_ansible_version: '2.2'
+  # See e.g. https://galaxy.ansible.com/api/v1/platforms/?name=Ubuntu
+  platforms:
+  - name: Ubuntu
+    versions:
+    - xenial
+    - yakkety
+    - zesty
+    - artful
+    - bionic
+    - focal
+  - name: Debian
+    versions:
+    - stretch
+    - buster
+    - bullseye
+  galaxy_tags:
+  - networking
+  - packaging
+  - system
+dependencies:
+- role: geerlingguy.docker
+- role: nginxinc.nginx

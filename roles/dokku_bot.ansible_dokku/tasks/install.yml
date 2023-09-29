@@ -1,0 +1,108 @@
+- name: packagecloud dokku apt key
+  apt_key:
+    url: https://packagecloud.io/dokku/dokku/gpgkey
+  tags:
+  - dokku
+
+- name: dokku repo
+  apt_repository:
+    filename: dokku
+    repo: 'deb https://packagecloud.io/dokku/dokku/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+
+    state: present
+  tags:
+  - dokku
+
+- name: debconf dokku/hostname
+  debconf:
+    name: dokku
+    question: 'dokku/hostname'
+    value: '{{ dokku_hostname }}'
+    vtype: 'string'
+  tags:
+  - dokku
+
+- name: debconf dokku/key_file
+  debconf:
+    name: dokku
+    question: 'dokku/key_file'
+    value: '{{ dokku_key_file }}'
+    vtype: 'string'
+  tags:
+  - dokku
+
+- name: debconf dokku/skip_key_file
+  debconf:
+    name: dokku
+    question: 'dokku/skip_key_file'
+    value: '{{ dokku_skip_key_file }}'
+    vtype: 'boolean'
+  tags:
+  - dokku
+
+- name: debconf dokku/vhost_enable
+  debconf:
+    name: dokku
+    question: 'dokku/vhost_enable'
+    value: '{{ dokku_vhost_enable }}'
+    vtype: 'boolean'
+  tags:
+  - dokku
+
+- name: debconf dokku/web_config
+  debconf:
+    name: dokku
+    question: 'dokku/web_config'
+    value: '{{ dokku_web_config }}'
+    vtype: 'boolean'
+  tags:
+  - dokku
+
+# this can be removed in July 2021
+# (package pinning deprecated).
+- name: package pinning
+  include_tasks: install-pin.yml
+  with_dict:
+    plugn: "{{ plugn_version }}"
+    sshcommand: "{{ sshcommand_version }}"
+    herokuish: "{{ herokuish_version }}"
+    dokku: "{{ dokku_version }}"
+  tags:
+  - dokku
+  - dokku-install
+
+# note: this is necessary since the apt module with "state: present" (below)
+# does *not* check whether the package version agrees with the pinned version.
+# Cannot be done in the pinning loop since all packages need to be unpinned
+# (or you can get version conflicts).
+- name: install pinned {{ item.key }} package
+  apt:
+    name: "{{ item.key }}={{ item.value }}"
+  with_dict:
+    plugn: "{{ plugn_version }}"
+    sshcommand: "{{ sshcommand_version }}"
+    herokuish: "{{ herokuish_version }}"
+    dokku: "{{ dokku_version }}"
+  when: item.value
+
+- name: install dokku packages
+  apt:
+    name:
+    - plugn
+    - sshcommand
+    - herokuish
+    - dokku
+    state: "{{ dokku_packages_state }}"
+  tags:
+  - dokku
+  - dokku-install
+
+- name: write vhost
+  when: dokku_vhost_enable | bool
+  copy:
+    content: "{{ dokku_hostname }}"
+    dest: /home/dokku/VHOST
+    mode: preserve
+  tags:
+  - dokku
+  - dokku-install

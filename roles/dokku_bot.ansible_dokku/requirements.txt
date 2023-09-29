@@ -1,0 +1,8 @@
+# for running tests
+molecule[docker]~=3.3.0
+docker~=4.4.4
+ansible~=4.6.0
+# for development
+pre-commit
+# for README generation
+pyyaml

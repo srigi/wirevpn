@@ -3,5 +3,8 @@ ecs-liva  ansible_host=192.168.0.99   ansible_user=root
 [dns_servers]
 ecs-liva
 
+[dokku_nodes]
+ecs-liva
+
 [wireguard_servers]
 ecs-liva

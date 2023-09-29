@@ -1,0 +1,5 @@
+---
+- name: dokku node
+  hosts: dokku_nodes
+  roles:
+    - dokku_bot.ansible_dokku # https://github.com/dokku/ansible-dokku

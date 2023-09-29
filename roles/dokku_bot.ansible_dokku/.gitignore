@@ -1,0 +1,4 @@
+ansible-role-requirements.yml
+.idea/
+*swp
+.vscode
