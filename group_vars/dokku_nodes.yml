@@ -1,0 +1,8 @@
+dokku_hostname: ecs-liva.wirevpn
+dokku_plugins:
+  - name: postgres
+    url: https://github.com/dokku/dokku-postgres.git
+dokku_users:
+  - name: Srigi
+    username: srigi
+    ssh_key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519.dev.srigi.pub') }}"

@@ -1,0 +1,44 @@
+- block:
+  - name: nginx:disable default site
+    file:
+      dest: /etc/nginx/{{ item }}/default
+      state: absent
+    notify:
+    - reload nginx
+    tags:
+    - dokku
+    with_items:
+    - sites-enabled
+    - sites-available
+
+  - name: Ensure nginx sites directories exists
+    file:
+      path: /etc/nginx/{{ item }}
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+    with_items:
+    - sites-enabled
+    - sites-available
+
+  - name: nginx:new default
+    copy:
+      src: nginx.default
+      dest: /etc/nginx/sites-available/00-default
+      owner: root
+      group: root
+      mode: 0644
+    tags:
+    - dokku
+
+  - name: nginx:enable default
+    file:
+      src: /etc/nginx/sites-available/00-default
+      dest: /etc/nginx/sites-enabled/00-default
+      state: link
+    notify:
+    - reload nginx
+    tags:
+    - dokku
+    when: dokku_manage_nginx

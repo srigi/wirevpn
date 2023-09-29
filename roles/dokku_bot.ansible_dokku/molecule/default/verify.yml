@@ -1,0 +1,433 @@
+- name: Verify
+  hosts: all
+  become: true
+
+  tasks:
+  - name: Run role without running any tasks
+    include_role:
+      name: dokku_bot.ansible_dokku
+      tasks_from: init.yml
+
+  # Testing dokku_global_cert
+  - name: Check that dokku_global_cert module can parse output
+    dokku_global_cert:
+      state: absent
+
+  # Testing dokku_hostname
+  - name: Get dokku_hostname    # noqa 301
+    command: dokku domains:report --global
+    register: dokku_domains
+
+  - name: Check that dokku_hostname is set correctly
+    assert:
+      that:
+      - "'test.domain' in dokku_domains.stdout"
+      msg: |
+        hostname 'test.domain' not found in output of 'dokku domains':
+        {{ dokku_domains.stdout }}
+
+  # check apt sources configuration
+  # Note: cannot use apt module for this https://stackoverflow.com/questions/51410696
+  - name: Run apt update  # noqa 303 301
+    command: apt-get update
+    register: apt_update
+
+  - name: Check that apt update output does not contain warnigns
+    assert:
+      that:
+      - "'W:' not in apt_update.stderr"
+      msg: |
+        Found warnings in output of `apt update`:
+        {{ apt_update.stderr }}
+
+  # Testing dokku_app
+  - name: create example-app
+    dokku_app:
+      app: example-app
+
+  # Testing dokku_acl_app
+  - name: Let gverdi manage example-app
+    dokku_acl_app:
+      app: example-app
+      users:
+      - gverdi
+
+  - name: List ACLs for example-app  # noqa 301
+    command: dokku acl:list example-app
+    register: dokku_acl_list
+
+  - name: Check that gverdi is in list of ACLs for example-app
+    assert:
+      that:
+      # Note: As of Nov 2021, `dokku acl:list` writes to stderr
+      # Feel free to remove this the stderr case when the following issue is fixed
+      # https://github.com/dokku-community/dokku-acl/issues/34
+      - ("'gverdi' in dokku_acl_list.stdout") or ("'gverdi' in dokku_acl_list.stderr")
+      msg: |-
+        'gverdi' not found in output of 'dokku acl:list example-app':
+        {{ dokku_acl_list.stdout }}
+
+  - name: Remove permission for gverdi to manage example-app
+    dokku_acl_app:
+      app: example-app
+      users:
+      - gverdi
+      state: absent
+
+  - name: List ACLs for example-app  # noqa 301
+    command: dokku acl:list example-app
+    register: dokku_acl_list
+
+  - name: Check that gverdi is no longer in list of ACLs for example-app
+    assert:
+      that:
+      # Note: As of Nov 2021, `dokku acl:list` writes to stderr
+      # Feel free to remove this the stderr case when the following issue is fixed
+      # https://github.com/dokku-community/dokku-acl/issues/34
+      - ("'gverdi' not in dokku_acl_list.stdout") and ("'gverdi' not in dokku_acl_list.stderr")
+      msg: |-
+        'gverdi' found in output of 'dokku acl:list example-app':
+        {{ dokku_acl_list.stdout }}
+
+
+  # Testing dokku_clone
+  - name: clone example-app
+    dokku_clone:
+      app: example-app
+      repository: https://github.com/heroku/node-js-getting-started
+      version: b10a4d7a20a6bbe49655769c526a2b424e0e5d0b
+
+  - name: Get list of apps  # noqa 301
+    command: dokku apps:list
+    register: dokku_apps
+
+  - name: Check that example-app is in list of apps
+    assert:
+      that:
+      - "'example-app' in dokku_apps.stdout"
+      msg: |
+        'example-app' not found in output of 'dokku apps:list':
+        {{ dokku_apps.stdout }}
+
+  - name: clone example app again
+    dokku_clone:
+      app: example-app
+      repository: https://github.com/heroku/node-js-getting-started
+      version: b10a4d7a20a6bbe49655769c526a2b424e0e5d0b
+      build: false
+    register: example_app
+
+  - name: Check that re-cloning example app did not change anything
+    assert:
+      that:
+      - not example_app.changed
+      msg: |
+        Re-cloning example app resulted in changed status
+
+  # Testing dokku_network
+  - name: Create a network # noqa 301
+    dokku_network:
+      name: example-network
+    register: example_network
+
+  - name: Get list of networks # noqa 301
+    command: dokku network:list
+    register: dokku_networks
+
+  - name: Check that example-network is in list of networks
+    assert:
+      that:
+      - "'example-network' in dokku_networks.stdout"
+      msg: |-
+        'example-network' not found in output of 'dokku network:list':
+        {{ dokku_networks.stdout }}
+
+  - name: Create a network that already exists # noqa 301
+    dokku_network:
+      name: example-network
+    register: example_network
+
+  - name: Check that re-creating network example-network did not change anything
+    assert:
+      that:
+      - not example_network.changed
+      msg: |
+        Re-creating network example-network resulted in changed status
+
+  # Testing dokku_network_property
+  - name: Setting a network property for an app
+    dokku_network_property:
+      app: example-app
+      property: attach-post-create
+      value: example-network
+
+  - name: Get network report for app example-app # noqa 301
+    command: dokku network:report example-app
+    register: example_app_network_report
+
+  - name: Check that property 'attach-post-create' of app 'example-app' has been set
+    assert:
+      that:
+      - example_app_network_report.stdout is search("attach post create:\s+example-network")
+      msg: |-
+        'attach post create: example-network' not found in outpot of 'dokku network:report example-app':
+        {{ example_app_network_report.stdout }}
+
+  - name: Clearing a network property for an app
+    dokku_network_property:
+      app: example-app
+      property: attach-post-create
+
+  - name: Get network report for app example-app # noqa 301
+    command: dokku network:report example-app
+    register: example_app_network_report
+
+  - name: Check that property 'attach-post-create' of app 'example-app' has been cleared
+    assert:
+      that:
+      - example_app_network_report.stdout is search("post create:\s+\n")
+      msg: |-
+        'attach post create:' not found in output of 'dokku network:report example-app':
+        {{ example_app_network_report.stdout }}
+
+  # Testing dokku_ports
+  - name: Set port mapping for an app
+    dokku_ports:
+      app: example-app
+      mappings:
+      - http:80:5000
+      - http:8080:5000
+
+  - name: Get proxy output
+    command: dokku proxy:report example-app
+    register: dokku_proxy_ports
+
+  - name: Check that port mapping was set
+    assert:
+      that:
+      - "'http:80:5000' in dokku_proxy_ports.stdout"
+      - "'http:8080:5000' in dokku_proxy_ports.stdout"
+      msg: |-
+        port mapping 'http:80:5000' or 'http:8080:5000' was not set in output of 'dokku proxy:report':
+        {{ dokku_proxy_ports.stdout }}
+
+  - name: Set port mapping that already exists
+    dokku_ports:
+      app: example-app
+      mappings:
+      - http:80:5000
+    register: existing_proxy_ports
+
+  - name: Check that setting existing port mapping did not change anything
+    assert:
+      that:
+      - not existing_proxy_ports.changed
+      msg: |
+        Setting existing port mapping resulted in changed status
+
+  - name: Remove port mapping
+    dokku_ports:
+      app: example-app
+      mappings:
+      - http:8080:5000
+      state: absent
+
+  - name: Get proxy output
+    command: dokku proxy:report example-app
+    register: dokku_proxy_ports
+
+  - name: Check that the port mapping was removed
+    assert:
+      that:
+      - "'http:8080:5000' not in dokku_proxy_ports.stdout"
+      msg: |-
+        port mapping 'http:8080:5000' was not removed in output of 'dokku proxy:report':
+        {{ dokku_proxy_ports.stdout }}
+
+  # Testing dokku_ps_scale
+  - name: Scaling application processes
+    dokku_ps_scale:
+      app: example-app
+      scale:
+        web: 2
+
+  - name: Get current scale values for application # noqa 301
+    command: dokku ps:scale example-app
+    register: example_app_scale_values
+
+  - name: Check that 'web' process of app 'example-app' has been scaled to '2'
+    assert:
+      that:
+      - "'web:  2' in example_app_scale_values.stdout"
+      msg: |-
+        'web:  2' not found in output of 'dokku ps:scale example-app':
+        {{ example_app_scale_values.stdout }}
+
+  # Testing dokku_image
+  - name: Create a dummy directory for testing
+    file:
+      path: /home/dokku/test
+      state: directory
+
+  - name: Deploy meilisearch using dokku_image
+    dokku_image:
+      app: ms
+      user_name: Elliot Alderson
+      user_email: elliotalderson@protonmail.ch
+      build_dir: /home/dokku/test
+      image: getmeili/meilisearch:latest
+
+  - name: Get list of apps # noqa 301
+    command: dokku apps:list
+    register: dokku_apps
+
+  - name: Check that ms is in list of apps
+    assert:
+      that:
+      - "'ms' in dokku_apps.stdout"
+      msg: |
+        'ms' not found in output of 'dokku apps:list':
+        {{ dokku_apps.stdout }}
+
+  # Testing dokku_builder
+  - name: Configuring the builder for an app
+    dokku_builder:
+      app: example-app
+      property: build-dir
+      value: /app
+
+  - name: Get builder output # noqa 301
+    command: dokku builder:report example-app
+    register: dokku_builder
+
+  - name: Check that the build dir was set correctly
+    assert:
+      that:
+      - "'/app' in dokku_builder.stdout"
+      msg: |-
+        build-dir '/app' not found in output of 'dokku builder':
+        {{ dokku_builder.stdout }}
+
+  # Testing dokku_http_auth
+  - name: Enabling http-auth for an app
+    dokku_http_auth:
+      app: example-app
+      state: present
+      username: samsepi0l
+      password: hunter2
+
+  - name: Get http-auth output # noqa 301
+    command: dokku --quiet http-auth:report example-app
+    register: dokku_http_auth_on
+
+  - name: Check that the HTTP Basic Authentication was enabled correctly
+    assert:
+      that:
+      - "'true' in dokku_http_auth_on.stdout"
+      msg: |-
+        'true' not found in output of 'dokku http-auth:report':
+        {{ dokku_http_auth_on.stdout }}
+
+  - name: Disabling http-auth for an app
+    dokku_http_auth:
+      app: example-app
+      state: absent
+
+  - name: Get http-auth output # noqa 301
+    command: dokku --quiet http-auth:report example-app
+    register: dokku_http_auth_off
+
+  - name: Check that the HTTP Basic Authentication was disabled correctly
+    assert:
+      that:
+      - "'false' in dokku_http_auth_off.stdout"
+      msg: |-
+        'false' not found in output of 'dokku http-auth:report':
+        {{ dokku_http_auth_off.stdout }}
+
+  # Testing dokku_checks
+  - name: Disabling the Zero Downtime deployment
+    dokku_checks:
+      app: example-app
+      state: absent
+
+  - name: Get checks output # noqa 301
+    command: dokku checks:report example-app
+    register: dokku_checks
+
+  - name: Check that the checks were disabled
+    assert:
+      that:
+      - "'_all_' in dokku_checks.stdout"
+      msg: |-
+        checks were not disabled in output of 'dokku checks':
+        {{ dokku_checks.stdout }}
+
+  - name: Re-enabling the Zero Downtime deployment
+    dokku_checks:
+      app: example-app
+      state: present
+
+  - name: Get checks output # noqa 301
+    command: dokku checks:report example-app
+    register: dokku_checks
+
+  - name: Check that the checks were re-enabled
+    assert:
+      that:
+      - "'none' in dokku_checks.stdout"
+      msg: |-
+        checks were not enabled in output of 'dokku checks':
+        {{ dokku_checks.stdout }}
+
+  # Testing dokku_docker_options
+  - name: Set docker build options
+    dokku_docker_options:
+      app: example-app
+      phase: build
+      option: "--pull"
+
+  - name: Get docker-options output # noqa 301
+    command: dokku docker-options:report example-app
+    register: dokku_docker_options
+
+  - name: Check that the docker options were set
+    assert:
+      that:
+      - "'--pull' in dokku_docker_options.stdout"
+      msg: |-
+        docker option '--pull' was not set in output of 'dokku docker-options':
+        {{ dokku_docker_options.stdout }}
+
+  - name: Set docker build options that already exist # noqa 301
+    dokku_docker_options:
+      app: example-app
+      phase: build
+      option: "--pull"
+    register: existing_docker_options
+
+  - name: Check that setting existing docker options did not change anything
+    assert:
+      that:
+      - not existing_docker_options.changed
+      msg: |
+        Setting existing docker options resulted in changed status
+
+  - name: Remove docker build options
+    dokku_docker_options:
+      app: example-app
+      phase: build
+      option: "--pull"
+      state: absent
+
+  - name: Get docker-options output # noqa 301
+    command: dokku docker-options:report example-app
+    register: dokku_docker_options
+
+  - name: Check that the docker options were removed
+    assert:
+      that:
+      - "'--pull' not in dokku_docker_options.stdout"
+      msg: |-
+        docker option '--pull' was not removed in output of 'dokku docker-options':
+        {{ dokku_docker_options.stdout }}

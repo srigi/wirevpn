@@ -1,0 +1,28 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Install NGINX
+      ansible.builtin.include_role:
+        name: nginxinc.nginx
+      vars:
+        nginx_modules:
+          - geoip
+          - image-filter
+          - njs
+          - perl
+          - xslt
+        nginx_service_modify: true
+        nginx_service_timeout: 95
+        nginx_logrotate_conf_enable: true
+        nginx_logrotate_conf:
+          paths:
+            - /var/log/nginx/*.log
+          options:
+            - daily
+            - missingok
+            - rotate 14
+            - compress
+            - delaycompress
+            - notifempty
+            - sharedscripts
