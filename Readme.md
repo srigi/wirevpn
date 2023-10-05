@@ -17,9 +17,9 @@ In the previous _incarnation_ of the VPN, I set up everything by hand. This time
          ┌─┐
          └┼┘
           │
-          │
-  │ │ │   │      ┌──────────┐
-  └─┼─┘   │      │          │
+  ( │ )   │
+ ( (│) )  │      ┌──────────┐
+  ( │ )   │      │          │
     │     │      │   ┌───┐  │
 WiFi│  WAN│      │LAN│   │  │
     │    ┌┼┐    ┌┼┐ ┌┼┐  │  │
@@ -29,7 +29,7 @@ WiFi│  WAN│      │LAN│   │  │
       └────────────────┘ │  │
                          │  │
                     ┌────┘  │
-        192.168.0.99│       │
+        192.168.0.9 │       │
                    ┌┼┐      │
         ┌──────────┴─┴─┐    │
         │ VPN server   │    │
@@ -52,7 +52,7 @@ WiFi│  WAN│      │LAN│   │  │
 Hostnames in (parentheses)
 ```
 
-Router is configured to reserve local LAN address `192.168.0.99` for the VPN server and forward public port `51280` to it. This makes the VPN server accessible from public Internet using my public IP address.
+Router is configured to reserve local LAN address `192.168.0.9` for the VPN server and forward public port `51280` to it. This makes the VPN server accessible from public Internet using my public IP address.
 
 Use-cases like watching movies or accessing files from the NAS, while outside the apartment, are possible.
 
