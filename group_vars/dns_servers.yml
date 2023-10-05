@@ -4,16 +4,17 @@ dnsmasq_name_servers:
   - 8.8.4.4
 
 dnsmasq_addresses:
-  #- "ecs-liva": "192.168.0.99" # won't work, VPN server has "ecs-liva" in /etc/hosts file
+  #- "ecs-liva": "192.168.0.9" # won't work, VPN server has "ecs-liva" in /etc/hosts file
   - "ecs-liva.wirevpn": "10.2.0.1"
 
-  - "lilith": "192.168.0.100"
+  - "lilith": "192.168.0.10"
   - "lilith.wirevpn": "10.2.0.10"
 
-  - "polaris": "192.168.0.101"
-  - "polaris.wirevpn": "10.2.0.11"
+  - "polaris": "192.168.0.20"
+  - "polaris.wirevpn": "10.2.0.20"
 
-  - "narishroom.wirevpn": "10.2.0.12"
+  - "narishroom": "192.168.0.100"
+  - "narishroom.wirevpn": "10.2.0.100"
 
 dnsmasq_interfaces:
   - lo
