@@ -1,4 +1,7 @@
 ---
+vault_server:
+  private_key: server PK
+
 vault_preshared_keys:
-  connor: some-secret-value
-  lilith: some-different-secret-value
+  lilith: some-secret-value
+  Polaris: some-different-secret-value
