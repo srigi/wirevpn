@@ -1,5 +1,5 @@
 ---
-# Copyright (C) 2018-2022 Robert Wimmer
+# Copyright (C) 2018-2024 Robert Wimmer
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #######################################
@@ -7,7 +7,14 @@
 #######################################
 
 # Directory to store WireGuard configuration on the remote hosts
-wireguard_remote_directory: "{{ '/etc/wireguard' if not ansible_os_family == 'Darwin' else '/opt/local/etc/wireguard' }}"
+wireguard_remote_directory: >-
+  {%- if wireguard_ubuntu_use_netplan -%}
+  /etc/netplan
+  {%- elif ansible_os_family == 'Darwin' -%}
+  /opt/local/etc/wireguard
+  {%- else -%}
+  /etc/wireguard
+  {%- endif %}
 
 # The default port WireGuard will listen if not specified otherwise.
 wireguard_port: "51820"
@@ -18,11 +25,20 @@ wireguard_interface: "wg0"
 # The default owner of the wg.conf file
 wireguard_conf_owner: root
 
+# By default a WireGuard configuration file in "wireguard_remote_directory"
+# directory will be created that is called like the value of "wireguard_interface"
+# plus ".conf". If "wireguard_ubuntu_use_netplan" is set to "true" this should
+# be changed to "70-{{ wireguard_interface }}.yaml" e.g.
+wireguard_conf_filename: "{{ wireguard_interface }}.conf"
+
 # The default group of the wg.conf file
 wireguard_conf_group: "{{ 'root' if not ansible_os_family == 'Darwin' else 'wheel' }}"
 
 # The default mode of the wg.conf file
-wireguard_conf_mode: 0600
+wireguard_conf_mode: "0600"
+
+# Whether any change to the wg.conf file should be backup
+wireguard_conf_backup: false
 
 # The default state of the wireguard service
 wireguard_service_enabled: "yes"
@@ -71,6 +87,12 @@ wireguard_interface_restart: false
 # the package manager in question supports this option)
 wireguard_update_cache: "true"
 
+# Normally the role installs and activates the wireguard kernel module where
+# appropriate.  In some cases we might not be able load kernel modules, like
+# unprivileged LXC guests.  If you set this to false you have to ensure
+# the wireguard module is available in the kernel!
+wireguard_install_kernel_module: true
+
 #######################################
 # Settings only relevant for:
 # - Ubuntu
@@ -83,6 +105,9 @@ wireguard_ubuntu_update_cache: "{{ wireguard_update_cache }}"
 
 # Set package cache valid time
 wireguard_ubuntu_cache_valid_time: "3600"
+
+# Set to "true" if you want to use netplan to configure WireGuard.
+wireguard_ubuntu_use_netplan: false
 
 #######################################
 # Settings only relevant for CentOS 7
