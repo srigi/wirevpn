@@ -2,8 +2,8 @@
 - name: Disallow root login with password
   replace:
     path: /etc/ssh/sshd_config
-    regexp: '#?PermitRootLogin\s+(?!without-password).*'
-    replace: 'PermitRootLogin without-password'
+    regexp: '#?PermitRootLogin\s+(?!prohibit-password).*'
+    replace: 'PermitRootLogin prohibit-password'
   notify: restart openssh-server
 
 - name: Disallow password authentication for SSH
