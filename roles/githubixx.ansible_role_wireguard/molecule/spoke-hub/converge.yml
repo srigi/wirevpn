@@ -1,5 +1,5 @@
 ---
-# Copyright (C) 2020-2025 Robert Wimmer
+# Copyright (C) 2025 Eyebrow Kang
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Setup WireGuard
@@ -10,4 +10,4 @@
   tasks:
     - name: Include WireGuard role
       ansible.builtin.include_role:
-        name: githubixx.ansible_role_wireguard
+        name: "githubixx.ansible_role_wireguard"

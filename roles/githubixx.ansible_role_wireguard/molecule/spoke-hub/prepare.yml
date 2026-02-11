@@ -1,8 +1,8 @@
 ---
-# Copyright (C) 2025 Robert Wimmer
+# Copyright (C) 2025 Eyebrow Kang
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- name: Prepare Ubuntu hosts
+- name: Setup Ubuntu hosts
   hosts: ubuntu
   remote_user: vagrant
   become: true
