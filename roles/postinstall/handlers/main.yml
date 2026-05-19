@@ -7,3 +7,11 @@
   become: true
   listen: "reconfigure openssh-server"
   service: name=ssh state=restarted
+
+- name: reload systemd
+  become: true
+  command: systemctl daemon-reload
+
+- name: restart ssh.socket
+  become: true
+  service: name=ssh.socket state=restarted enabled=yes

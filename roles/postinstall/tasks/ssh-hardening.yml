@@ -12,3 +12,36 @@
     regexp: '#?PasswordAuthentication\s+yes'
     replace: 'PasswordAuthentication no'
   notify: restart openssh-server
+
+- name: Disallow X11Forwarding SSH
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: '#?X11Forwarding\s+yes'
+    replace: 'X11Forwarding no'
+  notify: restart openssh-server
+
+- name: Ensure systemd override dir for ssh.socket exists
+  file:
+    path: /etc/systemd/system/ssh.socket.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Bind SSH socket to localhost + WireGuard only (systemd socket activation)
+  copy:
+    dest: /etc/systemd/system/ssh.socket.d/override.conf
+    owner: root
+    group: root
+    mode: 0644
+    content: |
+      [Socket]
+      # Reset upstream listeners
+      ListenStream=
+
+      # Only accept SSH via localhost + WireGuard
+      ListenStream=127.0.0.1:22
+      ListenStream=10.2.0.1:22
+  notify:
+    - reload systemd
+    - restart ssh.socket
